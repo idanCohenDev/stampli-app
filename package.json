@@ -61,6 +61,8 @@
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "jest-expo": "^54.0.12",
+    "reactotron-react-native": "^5.1.18",
+    "reactotron-react-query": "^2.0.2",
     "typescript": "~5.9.2"
   },
   "private": true

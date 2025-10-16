@@ -1,3 +1,4 @@
+import "@/src/config/reactotron";
 import { queryClient } from "@/src/state";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
