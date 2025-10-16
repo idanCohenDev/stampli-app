@@ -1,9 +1,8 @@
 import { Expense, ExpenseCategory, NewExpense, QueuedExpense } from "@/src/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ApiClient } from "./ApiClient";
-
-const CACHE_KEY = "@expenses_cache";
-const QUEUE_KEY = "@expenses_queue";
+import { logger } from "./LoggerService";
+import { STORAGE_KEYS } from "@/src/constants";
 
 export class ExpenseService {
   private apiClient: ApiClient;
@@ -16,40 +15,45 @@ export class ExpenseService {
 
   private async loadQueue(): Promise<void> {
     try {
-      const queueData = await AsyncStorage.getItem(QUEUE_KEY);
+      const queueData = await AsyncStorage.getItem(STORAGE_KEYS.EXPENSES_QUEUE);
       if (queueData) {
         this.queue = JSON.parse(queueData);
+        logger.info('Queue loaded successfully', 'ExpenseService', { queueLength: this.queue.length });
       }
     } catch (error) {
-      console.log(error);
+      logger.error('Failed to load queue', 'ExpenseService', error);
       this.queue = [];
     }
   }
 
   private async saveQueue(): Promise<void> {
     try {
-      await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(this.queue));
+      await AsyncStorage.setItem(STORAGE_KEYS.EXPENSES_QUEUE, JSON.stringify(this.queue));
+      logger.debug('Queue saved successfully', 'ExpenseService', { queueLength: this.queue.length });
     } catch (error) {
-      console.log(error);
+      logger.error('Failed to save queue', 'ExpenseService', error);
       throw new Error("Failed to save queue");
     }
   }
 
   private async loadCache(): Promise<Expense[]> {
     try {
-      const cached = await AsyncStorage.getItem(CACHE_KEY);
-      return cached ? JSON.parse(cached) : [];
+      const cached = await AsyncStorage.getItem(STORAGE_KEYS.EXPENSES_CACHE);
+      const expenses = cached ? JSON.parse(cached) : [];
+      logger.debug('Cache loaded successfully', 'ExpenseService', { expenseCount: expenses.length });
+      return expenses;
     } catch (error) {
-      console.log(error);
+      logger.error('Failed to load cache', 'ExpenseService', error);
       return [];
     }
   }
 
   private async saveCache(expenses: Expense[]): Promise<void> {
     try {
-      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(expenses));
+      await AsyncStorage.setItem(STORAGE_KEYS.EXPENSES_CACHE, JSON.stringify(expenses));
+      logger.debug('Cache saved successfully', 'ExpenseService', { expenseCount: expenses.length });
     } catch (error) {
-      console.log(error);
+      logger.error('Failed to save cache', 'ExpenseService', error);
       throw new Error("Failed to save cache");
     }
   }
@@ -62,7 +66,15 @@ export class ExpenseService {
       return response.data;
     }
 
-    return this.loadCache();
+    const cached = await this.loadCache();
+
+    if (cached.length === 0) {
+      const mockExpenses = this.getMockExpensesData();
+      await this.saveCache(mockExpenses);
+      return mockExpenses;
+    }
+
+    return cached;
   }
 
   async addTransaction(newExpense: NewExpense): Promise<Expense> {
@@ -84,10 +96,14 @@ export class ExpenseService {
       await this.saveQueue();
 
       const cached = await this.loadCache();
-      await this.saveCache([...cached, expense]);
+      await this.saveCache([expense, ...cached]);
 
       return expense;
     }
+
+    // Update cache with the successful response
+    const cached = await this.loadCache();
+    await this.saveCache([response.data, ...cached]);
 
     return response.data;
   }
@@ -118,8 +134,8 @@ export class ExpenseService {
     return this.queue.length;
   }
 
-  async getMockExpenses(): Promise<Expense[]> {
-    const mockExpenses: Expense[] = [
+  private getMockExpensesData(): Expense[] {
+    return [
       {
         id: "1",
         merchant: "Whole Foods",
@@ -153,7 +169,10 @@ export class ExpenseService {
         createdAt: new Date(Date.now() - 345600000).toISOString(),
       },
     ];
+  }
 
+  async getMockExpenses(): Promise<Expense[]> {
+    const mockExpenses = this.getMockExpensesData();
     await this.saveCache(mockExpenses);
     return mockExpenses;
   }

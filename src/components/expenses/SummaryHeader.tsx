@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { ExpenseSummary } from '@/src/types';
+import { ExpenseSummary, ExpenseCategory } from '@/src/types';
 import { formatCurrency, getCategoryColor } from '@/src/utils';
 
 interface SummaryHeaderProps {
@@ -28,13 +28,16 @@ export const SummaryHeader: React.FC<SummaryHeaderProps> = ({ summary }) => {
       <View style={styles.categoryBreakdown}>
         <Text style={styles.breakdownTitle}>Spend by Category</Text>
         <View style={styles.categoriesGrid}>
-          {Object.entries(summary.spendByCategory).map(([category, amount]) => (
-            <View key={category} style={styles.categoryItem}>
-              <View style={[styles.categoryDot, { backgroundColor: getCategoryColor(category as any) }]} />
-              <Text style={styles.categoryLabel}>{category}</Text>
-              <Text style={styles.categoryAmount}>{formatCurrency(amount)}</Text>
-            </View>
-          ))}
+          {Object.entries(summary.spendByCategory).map(([category, amount]) => {
+            const expenseCategory = category as ExpenseCategory;
+            return (
+              <View key={category} style={styles.categoryItem}>
+                <View style={[styles.categoryDot, { backgroundColor: getCategoryColor(expenseCategory) }]} />
+                <Text style={styles.categoryLabel}>{category}</Text>
+                <Text style={styles.categoryAmount}>{formatCurrency(amount)}</Text>
+              </View>
+            );
+          })}
         </View>
       </View>
     </View>

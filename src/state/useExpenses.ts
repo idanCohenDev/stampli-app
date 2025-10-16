@@ -7,7 +7,7 @@ const EXPENSES_KEY = ['expenses'];
 export const useExpenses = () => {
   return useQuery<Expense[]>({
     queryKey: EXPENSES_KEY,
-    queryFn: () => expenseService.getMockExpenses(),
+    queryFn: () => expenseService.getTransactions(),
   });
 };
 

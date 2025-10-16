@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, Text, TextInput, TextInputProps, StyleSheet } from 'react-native';
-import { Control, Controller, FieldValues, Path } from 'react-hook-form';
+import { Control, Controller, FieldValues, Path, RegisterOptions } from 'react-hook-form';
+import { theme } from '@/src/theme';
 
 interface ControlledTextInputProps<T extends FieldValues> extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   control: Control<T>;
   name: Path<T>;
   label: string;
-  rules?: any;
+  rules?: RegisterOptions<T>;
   error?: string;
 }
 
@@ -32,7 +33,7 @@ export function ControlledTextInput<T extends FieldValues>({
             value={value as string}
             onChangeText={onChange}
             onBlur={onBlur}
-            placeholderTextColor="#A0AEC0"
+            placeholderTextColor={theme.colors.gray[400]}
             {...textInputProps}
           />
         )}
@@ -44,29 +45,29 @@ export function ControlledTextInput<T extends FieldValues>({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 4,
+    marginBottom: theme.spacing[1],
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#4A5568',
-    marginBottom: 8,
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing[2],
   },
   input: {
-    backgroundColor: '#F7FAFC',
+    backgroundColor: theme.colors.gray[50],
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#2D3748',
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.base,
+    padding: theme.spacing[3],
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text.primary,
   },
   inputError: {
-    borderColor: '#FC8181',
+    borderColor: theme.colors.error[500],
   },
   errorText: {
-    fontSize: 12,
-    color: '#E53E3E',
-    marginTop: 4,
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.error[700],
+    marginTop: theme.spacing[1],
   },
 });
